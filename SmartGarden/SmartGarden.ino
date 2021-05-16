@@ -10,7 +10,7 @@ void setup() {
 }
 
 void loop() {
-  Serial.print("Wilgotnosc gleby wynosi: ");
-  Serial.println(sprawdzanieWilgotnosciGleby());
+  Serial.print("Wilgotnosc gleby wynosi: "); //testowe wyświetlanie 
+  Serial.println(sprawdzanieWilgotnosciGleby());//testowe wyświetlanie 
 
 }
