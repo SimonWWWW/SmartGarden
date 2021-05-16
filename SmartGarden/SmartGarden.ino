@@ -1,9 +1,16 @@
+#define czujnikWilgotnosciGleby A0 //przypisanie pinu A0 do czujnika wilgotnosci gleby
+int wilgotnoscGleby = 0;
+int sprawdzanieWilgotnosciGleby(){
+  wilgotnoscGleby = map(analogRead(czujnikWilgotnosciGleby),0,620,0,100); //mapowanie wartości analogowej na wartosc  procentowa (wartosci 0 do 620 uzyskane doswiadczalnie)
+  return wilgotnoscGleby;
+}
 void setup() {
-  // put your setup code here, to run once:
+  Serial.begin(9600);
 
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  Serial.print("Wilgotnosc gleby wynosi: "); //testowe wyświetlanie 
+  Serial.println(sprawdzanieWilgotnosciGleby());//testowe wyświetlanie 
 
 }
