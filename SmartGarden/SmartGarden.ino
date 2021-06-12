@@ -2,6 +2,7 @@
 //Jako sensor wykorzystana jest miniaturowa turbina wiatrowa. Napięcie generowane przez turbinę jest monitorowane na porcie szeregowym.
 //Kiedy wartość przekracza próg markiza jest zamykana (lub nie otwiera się). Co do wartości potrzeba wygrzebać przelicznik lub kalibrację.
 #define WIND A1 //przypisanie pinu A1 do czujnika prędkości wiatru
+#define LightSensor A2 //przypisanie pinu A2 do czujnika nasłonecznienia
 
 int windValue1; //definicja wartości pomiarów wiatru
 int windValue2;
@@ -20,6 +21,10 @@ void setup() {
 }
 
 void loop() {
+  int lightSensorValue = analogRead(LightSensor);
+  Serial.print("Nasłonecznienie: "); //testowe wyświetlanie
+  Serial.println(lightSensorValue, DEC);
+  
   Serial.print("Wilgotnosc gleby wynosi: "); //testowe wyświetlanie 
   Serial.println(sprawdzanieWilgotnosciGleby());//testowe wyświetlanie 
   
