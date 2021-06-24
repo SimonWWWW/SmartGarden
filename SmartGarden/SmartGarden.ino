@@ -1,35 +1,55 @@
+#include "TinyDHT.h"
 #include <buildTime.h>
-#define czujnikWilgotnosciGleby A0 //przypisanie pinu A0 do czujnika wilgotnosci gleby
+#define groundHumiditySensor A0 //przypisanie pinu A0 do czujnika wilgotnosci gleby
 //Jako sensor wykorzystana jest miniaturowa turbina wiatrowa. Napięcie generowane przez turbinę jest monitorowane na porcie szeregowym.
 //Kiedy wartość przekracza próg markiza jest zamykana (lub nie otwiera się). Co do wartości potrzeba wygrzebać przelicznik lub kalibrację.
 #define WIND A1 //przypisanie pinu A1 do czujnika prędkości wiatru
 #define LightSensor A2 //przypisanie pinu A2 do czujnika nasłonecznienia
+#define DHTTYPE DHT11 // PIN 3 - czujnik DHT11
+#define DHTPIN 2  
 
 int windValue1; //definicja wartości pomiarów wiatru
 int windValue2;
 int windValue3;
+DHT dht(DHTPIN, DHTTYPE);
 
-int wilgotnoscGleby = 0;
-int sprawdzanieWilgotnosciGleby(){
-  wilgotnoscGleby = map(analogRead(czujnikWilgotnosciGleby),0,620,0,100); //mapowanie wartości analogowej na wartosc  procentowa (wartosci 0 do 620 uzyskane doswiadczalnie)
-  return wilgotnoscGleby;
+float temperature;
+float airHumidity;
+
+int groundHumidity;
+int groundHumidityFunction(){
+  groundHumidity = map(analogRead(groundHumiditySensor),0,620,0,100); //mapowanie wartości analogowej na wartosc  procentowa (wartosci 0 do 620 uzyskane doswiadczalnie)
+  return groundHumidity;
 }
-int lightSensor = 0;
+int lightSensor;
 int lightSensorValue(){
   lightSensor = map(analogRead(LightSensor), 0, 1023, 100, 0); //mapowanie wartości analogowej na wartość  procentową
   return lightSensor;
 }
 
 void setup() {
-
   Serial.begin(9600);
+  dht.begin();
   
-  //startowy reset wartosci wiatru
+  //startowy reset wartosci 
+  temperature = 0;
+  airHumidity = 0;
+  groundHumidity = 0;
   windValue3 = 0;
 }
 
 void loop() {
 
+  temperature = dht.readTemperature();
+  airHumidity = dht.readHumidity();
+
+  //przeniesienie wartości do buforów
+  windValue1 = windValue2;
+  windValue2 = windValue3;
+
+  //przypisanie aktulanej wartości
+  windValue3 = WIND;
+  
   Serial.print("Godzina: ");
   Serial.println(BUILD_HOUR);
 
@@ -38,19 +58,18 @@ void loop() {
 
   Serial.print("Nasłonecznienie: "); //testowe wyświetlanie
   Serial.println(lightSensorValue());
-  
-  Serial.print("Wilgotnosc gleby wynosi: "); //testowe wyświetlanie 
-  Serial.println(sprawdzanieWilgotnosciGleby());//testowe wyświetlanie 
-  
+ 
+  Serial.print("Wilgotnosc gleby wynosi: "); //testowe wyświetlanie
+  Serial.println(groundHumidityFunction());//testowe wyświetlanie
+ 
   Serial.print("Siła wiatru: ");
   Serial.println(WIND);
 
-  //przeniesienie wartości do buforów
-  windValue1 = windValue2;
-  windValue2 = windValue3;
-
-  //przypisanie aktulanej wartości
-  windValue3 = WIND;
+  Serial.print("Temperatura: ");
+  Serial.println(temperature);
+  
+  Serial.print("Wilgotnosc powietrza: ");
+  Serial.println(airHumidity);
 
   //logika dla markizy
   if(BUILD_HOUR > 6 && BUILD_HOUR < 20){
@@ -72,15 +91,15 @@ void loop() {
   if(BUILD_MONTH > 3 && BUILD_MONTH < 10){//data od 1 kwietnia do 30 września
     if(BUILD_HOUR > 18 && BUILD_HOUR < 24 || BUILD_HOUR >= 0 && BUILD_HOUR < 9){//czas od 19:00 do 8:59
       if(windValue1 < 350 && windValue2 < 350 && windValue3 < 350){//test 3 ostatnich wartości
-        if(sprawdzanieWilgotnosciGleby() < 30){//zmienić wartość wilgotności głeby
+        if(groundHumidityFunction() < 30){//zmienić wartość wilgotności głeby
           if(lightSensorValue() < 20){//nasłonecznienie do 19%
-//            if(temperatura > 2){//temperatura powyżej 2 stopni 
-//              //tu wpisać włączenie podlewania
-                  Serial.println("Podlew włączony");//Podlew włączony
-//            }
-//              else{
-//                Serial.println("Jest zimno, podlew wyłączony");//Podlew wyłączony
-//              }
+            if(temperature > 2){//temperatura powyżej 2 stopni
+              //tu wpisać włączenie podlewania
+              Serial.println("Podlew włączony");//Podlew włączony
+            }
+            else{
+              Serial.println("Jest zimno, podlew wyłączony");//Podlew wyłączony
+            }
           }
           else{
             Serial.println("Słońce jasno świeci, podlew wyłączony");//Podlew wyłączony
@@ -103,5 +122,6 @@ void loop() {
   }
 
   Serial.println("");//odstęp
-  delay(6000); //opóźnienie między pomiarami
+  delay(4000); //opóźnienie między pomiarami
+
 }
