@@ -1,5 +1,7 @@
+#include <Wire.h>
 #include <buildTime.h>
-#include "TinyDHT.h"
+#include <TinyDHT.h>
+#include <Adafruit_BMP085.h>
 #define groundHumiditySensor A0 //przypisanie pinu A0 do czujnika wilgotnosci gleby
 //Jako sensor wykorzystana jest miniaturowa turbina wiatrowa. Napięcie generowane przez turbinę jest monitorowane na porcie szeregowym.
 //Kiedy wartość przekracza próg markiza jest zamykana (lub nie otwiera się). Co do wartości potrzeba wygrzebać przelicznik lub kalibrację.
@@ -7,11 +9,15 @@
 #define LightSensor A2 //przypisanie pinu A2 do czujnika nasłonecznienia
 #define DHTTYPE DHT11 // PIN 3 - czujnik DHT11
 #define DHTPIN 2  
+DHT dht(DHTPIN, DHTTYPE);
+
+Adafruit_BMP085 bmp;
 
 int windValue1; //definicja wartości pomiarów wiatru
 int windValue2;
 int windValue3;
-DHT dht(DHTPIN, DHTTYPE);
+
+int pressure;
 
 float temperature;
 float airHumidity;
@@ -27,18 +33,25 @@ int lightSensorValue(){
   return lightSensor;
 }
 
+
+String text;
+
 void setup() {
   Serial.begin(9600);
   dht.begin();
   
   //startowy reset wartosci 
+  lightSensor = 0;
   temperature = 0;
+  pressure = 0;
   airHumidity = 0;
   groundHumidity = 0;
   windValue3 = 0;
 }
 
 void loop() {
+
+  pressure = bmp.readSealevelPressure();
 
   temperature = dht.readTemperature();
   airHumidity = dht.readHumidity();
@@ -50,41 +63,21 @@ void loop() {
   //przypisanie aktulanej wartości
   windValue3 = WIND;
   
-  Serial.print("Godzina: ");
-  Serial.println(BUILD_HOUR);
-
-  Serial.print("Miesiąc: ");
-  Serial.println(BUILD_MONTH);
-
-  Serial.print("Nasłonecznienie: "); //testowe wyświetlanie
-  Serial.println(lightSensorValue());
- 
-  Serial.print("Wilgotnosc gleby wynosi: "); //testowe wyświetlanie
-  Serial.println(groundHumidityFunction());//testowe wyświetlanie
- 
-  Serial.print("Siła wiatru: ");
-  Serial.println(WIND);
-
-  Serial.print("Temperatura: ");
-  Serial.println(temperature);
-  
-  Serial.print("Wilgotnosc powietrza: ");
-  Serial.println(airHumidity);
 
   //logika dla markizy
   if(BUILD_HOUR > 6 && BUILD_HOUR < 20){
     if(windValue1 < 350 && windValue2 < 350 && windValue3 < 350){//test 3 ostatnich wartości
         //tu wpisac otwieranie markizy
-        Serial.println("Markiza otwarta");//markiza otwarta
+        text = ("Markiza otwarta");//markiza otwarta
        }
     else{
         //tu wpisac zamykanie markizy
-        Serial.println("Wieje silny wiatr, markiza zamknięta");//markiza zamknięta
+        text = ("Wieje silny wiatr, markiza zamknieta");//markiza zamknięta
        }
 
   }
   else{
-    Serial.println("O tej godzinie markiza zamknięta");//markiza zamknięta
+    text = ("O tej godzinie markiza zamknieta");//markiza zamknięta
   }
 
   //logika dla podlewu
@@ -95,34 +88,55 @@ void loop() {
           if(lightSensorValue() < 20){//nasłonecznienie do 19%
             if(temperature > 2){//temperatura powyżej 2 stopni
               //tu wpisać włączenie podlewania
-              Serial.println("Podlew włączony");//Podlew włączony
+              text = ("Podlew wlaczony");//Podlew włączony
             }
             else{
-              Serial.println("Jest zimno, podlew wyłączony");//Podlew wyłączony
+              text = ("Jest zimno, podlew wylaczony");//Podlew wyłączony
             }
           }
           else{
-            Serial.println("Słońce jasno świeci, podlew wyłączony");//Podlew wyłączony
+            text = ("Slonce jasno swieci, podlew wylaczony");//Podlew wyłączony
           }
         }
         else{
-          Serial.println("Wilgotność dostateczna, podlew wyłączony");//Podlew wyłączony
+          text = ("Wilgotnosc dostateczna, podlew wylaczony");//Podlew wyłączony
         }
       }
       else{
-        Serial.println("Wieje silny wiatr, podlew wyłączony");//Podlew wyłączony
+        text = ("Wieje silny wiatr, podlew wylaczony");//Podlew wyłączony
       }
     }
     else{
-      Serial.println("O tej godzinie podlew wyłączony");//Podlew wyłączony
+      text = ("O tej godzinie podlew wylaczony");//Podlew wyłączony
     }
   }
   else{
-    Serial.println("W tym miesiącu podlew wyłączony");//Podlew wyłączony
+    text = ("W tym miesiącu podlew wylaczony");//Podlew wyłączony
   }
-
-  Serial.println("");//odstęp
+  Serial.println("__________________________________________");
+  Serial.println("SMART GARDEN");
+  Serial.print("Temperatura: "); 
+  Serial.print((String)temperature);
+  Serial.println(" *C");
+  Serial.print("Cisnienie: ");
+  Serial.print((String)pressure);
+  Serial.println(" hPa");
+  Serial.print("Wilgotnosc powietrza: ");
+  Serial.print((String)airHumidity);
+  Serial.println(" %");
+  Serial.print("Sila wiatru: ");
+  Serial.println((String)windValue3); 
+  Serial.print("Naslonecznienie: ");
+  Serial.print((String)lightSensorValue());
+  Serial.println(" %");
+  Serial.print("Wilgotnosc gleby: ");
+  Serial.print((String)groundHumidity);
+  Serial.println(" %");
+  Serial.println("__________________________________________");
+  Serial.println("KOMUNIKAT:");
+  Serial.println(text);
+  Serial.println("__________________________________________");
   delay(4000); //opóźnienie między pomiarami
+  
 
 }
->>>>>>> b7633d9c0e1e5fbe5469f52a31aadcff10f90150

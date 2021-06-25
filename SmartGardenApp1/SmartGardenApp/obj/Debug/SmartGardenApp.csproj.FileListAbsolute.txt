@@ -1,0 +1,7 @@
+C:\Users\szymo\Desktop\SmartGardenApp1\SmartGardenApp\bin\Debug\SmartGardenApp.exe.config
+C:\Users\szymo\Desktop\SmartGardenApp1\SmartGardenApp\bin\Debug\SmartGardenApp.exe
+C:\Users\szymo\Desktop\SmartGardenApp1\SmartGardenApp\bin\Debug\SmartGardenApp.pdb
+C:\Users\szymo\Desktop\SmartGardenApp1\SmartGardenApp\obj\Debug\SmartGardenApp.csprojAssemblyReference.cache
+C:\Users\szymo\Desktop\SmartGardenApp1\SmartGardenApp\obj\Debug\SmartGardenApp.csproj.CoreCompileInputs.cache
+C:\Users\szymo\Desktop\SmartGardenApp1\SmartGardenApp\obj\Debug\SmartGardenApp.exe
+C:\Users\szymo\Desktop\SmartGardenApp1\SmartGardenApp\obj\Debug\SmartGardenApp.pdb
